@@ -406,7 +406,7 @@ else
 fi
 
 #create the kibana keystore
-if [ -e "${KIBPATH}"kibana.keystore ]; then
+if [ ! -e "${KIBPATH}"kibana.keystore ]; then
     ./expect/create-kibana-keystore
 fi
 
@@ -454,7 +454,7 @@ rm -f "${DEFDIR}ssl/agents/es-agent.zip"
 cp "${DEFDIR}ssl/ca/ca.crt" "${DEFDIR}ssl/agents/es-agent"
 
 #create the logstash keystore
-if [ -e "${LGSTPATH}"logstash.keystore ]; then
+if [ ! -e "${LGSTPATH}"logstash.keystore ]; then
     ./expect/create-logstash-keystore
 fi
 
