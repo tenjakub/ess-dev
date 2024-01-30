@@ -1,0 +1,29 @@
+{
+  "policy_id": "59fc3f5c-ca25-45a8-80e5-e31ae2fc7985",
+  "package": {
+    "name": "auditd",
+    "version": "3.19.1"
+  },
+  "name": "linux-auditd-default",
+  "description": "Default integration for gathering information from Linux hosts.",
+  "namespace": "default",
+  "inputs": {
+    "auditd-logfile": {
+      "enabled": true,
+      "streams": {
+        "auditd.log": {
+          "enabled": true,
+          "vars": {
+            "paths": [
+              "/var/log/audit/audit.log*"
+            ],
+            "tags": [
+              "auditd-log"
+            ],
+            "preserve_original_event": false
+          }
+        }
+      }
+    }
+  }
+}
