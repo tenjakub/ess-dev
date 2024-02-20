@@ -39,7 +39,7 @@ infu () {
 
 #modify config file line
 #usage: modcol "parameter" "value" "/path/to/file"
-modcol() {
+modcol () {
     local find=$1 #should end with: (eg. host.name:)
     local add=$2 #gets added to the line
     local file=$3
@@ -90,6 +90,11 @@ if [ ! $UID -eq "0"  ]; then
     exit 22
 fi
 
+#modify the permissions of the all the files in the instalaltion
+chmod 644 ./api-requests/*
+chmod 644 ./config-files/*
+chmod 744 ./expect/*
+
 #create script work directory
 if [ ! -d "${DEFDIR}" ]; then
     mkdir -p "/${DEFDIR}"
@@ -100,7 +105,7 @@ if [ ! -f "${LOGFILE}" ]; then
     touch "${LOGFILE}"
 fi
 
-#create a directory for rserve files
+#create a directory for reserve files
 RSVDIR="${DEFDIR}reserve/"
 if [ ! -d  "${RSVDIR}" ]; then
     sudo mkdir -p "${RSVDIR}"
@@ -141,7 +146,7 @@ case "${DISTROLIKE}" in
 esac
 infu "System distribution determined as ${DISTRO}"
 
-#tell the user about the required packages
+#inform the user about the required packages
 if ! whiptail --title "Script dependencies" --yesno "This script needs the following packages available on the system in order to work properly. Any required packages will be installed automatically.\n\n${DEPENDENCIES}\n\nIs this alright?" 12 78; then
     infu "User chose to exit the installation process"
     exit 24
