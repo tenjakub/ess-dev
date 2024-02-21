@@ -9,7 +9,7 @@ cd "${WORKDIR}"
 DEPENDENCIES="curl zip tar expect openssl jq"
 
 #define script work name. This name will be used for the script directory and logging naming scheme
-DEFNAME="elk-install"
+DEFNAME="ess-install"
 
 #set the default port for the Kibana web interface (can be changed during the installation process)
 DEFKIBPORT=8443
@@ -211,7 +211,7 @@ SUPPASS_ERR=""
 MINPASSLENGTH=6
 
 while [ "${REPEAT}" == "1" ]; do
-    SUPPASS=$(whiptail --passwordbox "Please enter the password for the ELK stack superuser. This user will have the highest privilages, so keep this password secure.\n${SUPPASS_ERR}" 9 78 "" --title "SET SUPERUSER PASSWORD" 3>&1 1>&2 2>&3)
+    SUPPASS=$(whiptail --passwordbox "Please enter the password for the Elastic Stack superuser (elastic). This user will have the highest privilages, so keep this password secure.\n${SUPPASS_ERR}" 9 78 "" --title "SET SUPERUSER PASSWORD" 3>&1 1>&2 2>&3)
     exitstatus=$?
     if [ $exitstatus = 0 ]; then
         if [ "${#SUPPASS}" -ge "${MINPASSLENGTH}" ]; then
