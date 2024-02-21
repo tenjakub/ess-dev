@@ -183,7 +183,7 @@ REPEAT=1
 INP_ERR=""
 
 while [ "${REPEAT}" == "1" ]; do
-    KIBPORT=$(whiptail --inputbox "Set the port for the Kibana web interface. The default value is 5601, however you can choose one you prefer.\n${INP_ERR}" 9 78 "${DEFKIBPORT}" --title "SET IP ADDRESS" 3>&1 1>&2 2>&3)
+    KIBPORT=$(whiptail --inputbox "Set the port for the Kibana web interface. This is the port you will use to connect to the system web interface. The default value often used for Kibana is 5601, however you can choose one you prefer.\n${INP_ERR}" 9 78 "${DEFKIBPORT}" --title "SET KIBANA WEB INTERFACE PORT" 3>&1 1>&2 2>&3) 
     exitstatus=$?
 
     if [ $exitstatus = 0 ]; then
