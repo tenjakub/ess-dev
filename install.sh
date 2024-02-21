@@ -163,7 +163,7 @@ REPEAT=1
 INP_ERR=""
 
 while [ "${REPEAT}" == "1" ]; do
-    IPADDR=$(whiptail --inputbox "Enter the server IP address you want the ELK Stack to operate on.\n${INP_ERR}" 9 78 "" --title "SET IP ADDRESS" 3>&1 1>&2 2>&3)
+    IPADDR=$(whiptail --inputbox "Enter the server IPv4 address you want the Elastic SIEM application to operate on.\n${INP_ERR}" 9 78 "" --title "SET IP ADDRESS" 3>&1 1>&2 2>&3)
     exitstatus=$?
 
     if [ $exitstatus = 0 ]; then
@@ -236,6 +236,12 @@ while [ "${REPEAT}" == "1" ]; do
         exit 10
     fi
 done
+
+#inform the user that the installation is about to begin
+if ! whiptail --title "INSTALLATION ABOUT TO START" --yesno "The installation is about to start, and it cannot be terminated from now on.\nDo you want to continue?" 12 78; then
+    infu "User chose to exit the installation process"
+    exit 100
+fi
 
 #generating internal user passwords
 KIBSPASS=$(openssl rand -base64 12)
