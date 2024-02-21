@@ -154,8 +154,8 @@ fi
 
 #install required packages
 case "${DISTRO}" in
-    redhat) dnf install "${DEPENDENCIES}" -y -q;;
-    debian) apt-get install "${DEPENDENCIES}" -y;;
+    redhat) dnf install ${DEPENDENCIES} -y -q;;
+    debian) apt-get install ${DEPENDENCIES} -y;;
 esac
 
 #enter and check the server IP address
