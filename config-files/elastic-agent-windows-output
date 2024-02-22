@@ -1,0 +1,7 @@
+outputs:
+  default:
+    type: logstash
+    hosts: ["<YOUR_SERVER_IP_HERE>:5055"]
+    ssl.certificate_authorities: ["C:\\Program Files\\Elastic\\Agent\\certs\\ca.crt"]
+    ssl.certificate: "C:\\Program Files\\Elastic\\Agent\\certs\\es-agent.crt"
+    ssl.key: "C:\\Program Files\\Elastic\\Agent\\certs\\es-agent.key"
