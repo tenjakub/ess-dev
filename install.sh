@@ -298,7 +298,7 @@ case "${DISTRO}" in
         echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
         infu "Debian repository added"
 
-        #check if there is the apt-transport-https package installed (reccomended by the documentation)
+        #check if there is the apt-transport-https package installed (reccomended by the official documentation)
         dpkg -s apt-transport-https &> /dev/null
         exitstatus=$?
         if [ $exitstatus = 1 ]; then
