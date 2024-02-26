@@ -237,6 +237,13 @@ while [ "${REPEAT}" == "1" ]; do
     fi
 done
 
+#ask the user whether they want the services to start automatically after boot up
+if whiptail --title "START WITH STARTUP" --yesno "Would you like to enable auto-start for the installed services after the installation finishes? This will configure the services to automatically start each time the system boots up." 12 78; then
+    AUTOSTART=1
+else
+    AUTOSTART=0
+fi
+
 #inform the user that the installation is about to begin
 if ! whiptail --title "INSTALLATION ABOUT TO START" --yesno "The installation is about to start, and it cannot be terminated from now on.\nDo you want to continue?" 12 78; then
     infu "User chose to exit the installation process"
@@ -530,6 +537,11 @@ if [[ "${LNXINT1_RESPT}" == *"\"updated_by\":"* ]]; then
     infu "Linux Auditd integration succesfully added to agent policy"
 else
     infu "ERROR: Linux Auditd integration has NOT been added to agent policy"
+fi
+
+#enable the services, if the user chose to do so
+if [[ "${AUTOSTART}" -eq "1" ]]; then
+    echo "start"
 fi
 
 #Inform the user about the succesful completion of the script
