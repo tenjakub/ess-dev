@@ -90,7 +90,7 @@ if [ ! $UID -eq "0"  ]; then
     exit 22
 fi
 
-#modify the permissions of the all the files in the instalaltion
+#modify the permissions of the all the files used by the instalaltion
 chmod 644 ./api-requests/*
 chmod 644 ./config-files/*
 chmod 744 ./expect/*
@@ -100,6 +100,7 @@ if [ ! -d "${DEFDIR}" ]; then
     mkdir -p "/${DEFDIR}"
 fi
 
+#create the cript logfile
 LOGFILE="${DEFDIR}${DEFNAME}.log"
 if [ ! -f "${LOGFILE}" ]; then
     touch "${LOGFILE}"
@@ -112,10 +113,11 @@ if [ ! -d  "${RSVDIR}" ]; then
     infu "Created reserve files directory"
 fi
 
+#inform about the script startup
 infu "==== SCRIPT STARTED ===="
 infu "Working at: ${WORKDIR}"
 
-#determine the system distribution; distro output is DISTRO
+#determine the system distribution; distro output value is DISTRO
 if [[ ! -z $(grep "^ID_LIKE=" /etc/os-release) ]]; then
     DISTROLIKE=$(grep "^ID_LIKE=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
 elif [[ ! -z $(grep "^ID=" /etc/os-release) ]]; then
@@ -151,12 +153,6 @@ if ! whiptail --title "Script dependencies" --yesno "This script needs the follo
     infu "User chose to exit the installation process"
     exit 24
 fi
-
-#install required packages
-case "${DISTRO}" in
-    redhat) dnf install ${DEPENDENCIES} -y -q;;
-    debian) apt-get install ${DEPENDENCIES} -y;;
-esac
 
 #enter and check the server IP address
 REPEAT=1
@@ -266,6 +262,12 @@ else
     infu "ERROR: Logstash Internal password has not been created."
     exit 31
 fi
+
+#install required packages
+case "${DISTRO}" in
+    redhat) dnf install ${DEPENDENCIES} -y -q;;
+    debian) apt-get install ${DEPENDENCIES} -y;;
+esac
 
 #add the elasticsearch repository
 case "${DISTRO}" in
