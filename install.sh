@@ -503,14 +503,13 @@ KIBSTATUS_TIMEOUT=181
 infu "starting Kibana"
 while [ "${KIBSTATUS_REPEAT}" -eq "1" ]; do
   if [ $(date +%s) -lt $((KIBSTATUS_START + KIBSTATUS_TIMEOUT)) ]; then
-    if ! curl --fail --silent --output /dev/null -u "elastic:Abcdef0" --cacert "/opt/elk-install/ssl/ca/ca.crt" "https://192.168.55.21:8443"; then
+    if ! curl --fail --silent --output /dev/null -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" "https://${IPADDR}:${KIBPORT}"; then
       sleep 5
     else
       KIBSTATUS_REPEAT=0
     fi
   else
     infu "Timeout on Kibana startup has been reached. The agent policies have NOT been added."
-    exit 50
   fi
 done
 
