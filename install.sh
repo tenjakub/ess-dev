@@ -495,8 +495,29 @@ fi
 systemctl start logstash
 systemctl start kibana
 
+#check whether the Kibana API is available
+KIBSTATUS_REPEAT=1
+KIBSTATUS_START=$(date +%s)
+KIBSTATUS_TIMEOUT=181
+
+infu "starting Kibana"
+while [ "${KIBSTATUS_REPEAT}" -eq "1" ]; do
+  if [ $(date +%s) -lt $((KIBSTATUS_START + KIBSTATUS_TIMEOUT)) ]; then
+    if ! curl --fail --silent --output /dev/null -u "elastic:Abcdef0" --cacert "/opt/elk-install/ssl/ca/ca.crt" "https://192.168.55.21:8443"; then
+      sleep 5
+    else
+      KIBSTATUS_REPEAT=0
+    fi
+  else
+    infu "Timeout on Kibana startup has been reached. The agent policies have NOT been added."
+    exit 50
+  fi
+done
+
+infu "Kibana API is now available!"
+
 #create a Windows agent policy
-WINPLC_RESP=$(curl -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "windows-agents-default", "description": "The default policy to for use with Windows Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
+WINPLC_RESP=$(curl --silent --output /dev/null -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "windows-agents-default", "description": "The default policy to for use with Windows Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
 if [[ "${WINPLC_RESP}" == *"\"updated_by\":"* ]]; then
     infu "Windows agent policy succesfully created"
 else
@@ -504,7 +525,7 @@ else
 fi
 
 #create a Linux agent policy
-LNXPLC_RESP=$(curl -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "linux-agents-default", "description": "The default policy to for use with Linux Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
+LNXPLC_RESP=$(curl --silent --output /dev/null -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "linux-agents-default", "description": "The default policy to for use with Linux Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
 if [[ "${LNXPLC_RESP}" == *"\"updated_by\":"* ]]; then
     infu "Linux agent policy succesfully created"
 else
@@ -512,15 +533,15 @@ else
 fi
 
 #get the policy IDs
-WINPLC_ID=$(curl -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies" | jq -r '.items[] | select(.name == "windows-agents-default") | .id')
-LNXPLC_ID=$(curl -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies" | jq -r '.items[] | select(.name == "linux-agents-default") | .id')
+WINPLC_ID=$(curl --silent --output /dev/null -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies" | jq -r '.items[] | select(.name == "windows-agents-default") | .id')
+LNXPLC_ID=$(curl --silent --output /dev/null -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies" | jq -r '.items[] | select(.name == "linux-agents-default") | .id')
 
 #replace the policy IDs for the integration add templates
 sed -i "/policy_id/c\\  \"policy_id\": \"${WINPLC_ID}\"," "./api-requests/add-windows-integration"
 sed -i "/policy_id/c\\  \"policy_id\": \"${LNXPLC_ID}\"," "./api-requests/add-linux-auditd-integration"
 
 #add the Windows integration to the agent policy
-WININT1_RESPT=$(curl -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/package_policies" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" --data "@./api-requests/add-windows-integration")
+WININT1_RESPT=$(curl --silent --output /dev/null -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/package_policies" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" --data "@./api-requests/add-windows-integration")
 if [[ "${WININT1_RESPT}" == *"\"updated_by\":"* ]]; then
     infu "Windows integration succesfully added to agent policy"
 else
@@ -528,7 +549,7 @@ else
 fi
 
 #add the Linux Auditd integration to the agent policy
-LNXINT1_RESPT=$(curl -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/package_policies" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" --data "@./api-requests/add-linux-auditd-integration")
+LNXINT1_RESPT=$(curl --silent --output /dev/null -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/package_policies" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" --data "@./api-requests/add-linux-auditd-integration")
 if [[ "${LNXINT1_RESPT}" == *"\"updated_by\":"* ]]; then
     infu "Linux Auditd integration succesfully added to agent policy"
 else
@@ -537,13 +558,20 @@ fi
 
 #enable the services, if the user chose to do so
 if [[ "${AUTOSTART}" -eq "1" ]]; then
-    echo "start"
+    systemctl enable elasticsearch
+    systemctl enable kibana
+    systemctl enable logstash
 fi
 
 #Inform the user about the succesful completion of the script
 whiptail --title "INSTALLATION SUCCESFULL" --msgbox "The script has succesfully completed the Elastic SIEM installation process. Check if the software works fine, or use the official documentation to fix any problems." 9 78
 infu "The istallation has succesfully completed!"
+echo "==============================================================================================================================================================="
 infu "The application web interface is now available at https://${IPADDR}:${KIBPORT}"
+infu "Make sure to enable ports 5044, 5055 and ${KIBPORT} on this machine's firewall!"
+infu "For full functionality of the system, security rules have to be imported manually. Please refer to the included documentation in the README.md file or the official documentation."
+infu "Elastic Agents manual installation process can also be found in the included documentation in the README.md file or the official documentation"
+echo "==============================================================================================================================================================="
 echo "Here you can see the passwords for the system internal passwords. THIS IS THE ONLY TIME THEY WILL BE SHOWN TO YOU. It is advised to copy them to a secure location, so that you can use them if you need to."
 echo "KIBANA SYSTEM PASSWORD: ${KIBSPASS}"
 echo "LOGSTASH INTERNAL PASSWORD: ${LOGIPASS}"
