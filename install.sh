@@ -233,7 +233,7 @@ while [ "${REPEAT}" == "1" ]; do
     fi
 done
 
-#ask the user whether they want the services to start automatically after boot up
+#ask the user about automatic services start after boot-up
 if whiptail --title "START WITH STARTUP" --yesno "Would you like to enable auto-start for the installed services after the installation finishes? This will configure the services to automatically start each time the system boots up." 12 78; then
     AUTOSTART=1
 else
@@ -246,7 +246,7 @@ if ! whiptail --title "INSTALLATION ABOUT TO START" --yesno "The installation is
     exit 100
 fi
 
-#generating internal user passwords
+#generate internal user passwords
 KIBSPASS=$(openssl rand -base64 12)
 if [ $? = 0 ]; then
     infu "Kibana System password has been created"
@@ -334,7 +334,6 @@ case "${DISTRO}" in
     debian) 
         sudo apt-get update -y
         sudo apt-get -o Dpkg::Options::="--force-confold" install elasticsearch -y
-            #PTA SE TO JESTLI TO MA NAHRADIT TEN KONFIGURAK, HODI TO PROMPT VIZ DISCORD
         sudo apt-get install kibana -y
         sudo apt-get install logstash -y
     ;;
@@ -365,7 +364,6 @@ if [ -e /etc/elasticsearch/elasticsearch.yml.dpkg-dist ]; then
 fi
 
 #modify the elasticsearch configuration configuration file
-
 modcol "cluster.name:" "${SERVERNAME}" "${ESCONF}"
 modcol "node.name:" "${SERVERNAME}" "${ESCONF}"
 modcol "xpack.security.enabled:" "true" "${ESCONF}"
@@ -375,8 +373,6 @@ modcol "xpack.security.http.ssl.certificate:" "${ESPATH}certs/es-http.crt" "${ES
 modcol "xpack.security.http.ssl.key:" "${ESPATH}certs/es-http.key" "${ESCONF}"
 
 infu "Modified Elasticsearch configuration file"
-
-#BACHA V TECH SLOZKACH UZ NECO BYT MUZE, POKUD TEN SKRIPT PROJEDE, TAK JE LEPSI VSECHNY CERTIFIKATY PREGENEROVAT, AT V TOM NENI BORDEL; BUDE TREBA TO BUD PROSTE SMAZAT, NEBO PREKOPIROVAT DO RESERVE SLOZKY
 
 #generate certificate authority
 repdir "ca" "${DEFDIR}ssl/" "${RSVDIR}"
@@ -443,7 +439,7 @@ systemctl start elasticsearch.service
 #reset the kibana system user password
 ./expect/reset-kibana-system-password "${KIBSPASS}"
 
-#Create a role for the Internal Logstash user for Elasticsearch, together with the user itself
+#Create a role for the internal Logstash user for Elasticsearch, together with the user itself
 LOGIROLE_RESP=$(curl -X POST "https://127.0.0.1:9200/_security/role/logstash_writer" -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" -H "Content-Type: application/json" -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ], "privileges": ["write","create","create_index","manage","manage_ilm"] } ] }')
 
 if [[ "${LOGIROLE_RESP}" == *"true"* ]]; then
@@ -457,9 +453,6 @@ if [[ "${LOGIROLE_RESP}" == *"true"* ]]; then
 else
     infu "ERROR: Logstash writer role has NOT been created"
 fi
-
-#start the kibana service
-systemctl start kibana
 
 #create logstash and agent transport certificates
 /usr/share/elasticsearch/bin/elasticsearch-certutil cert --ca-cert "${DEFDIR}ssl/ca/ca.crt" --ca-key "${DEFDIR}ssl/ca/ca.key" --days 1826 --name logstash-input --out "${DEFDIR}ssl/logstash-input.zip" --ip "${IPADDR}" --pem -s
@@ -498,8 +491,9 @@ else
     infu "If you did explicitely modify it and want the default configuration to be used, you can find it at ${WORKDIR}config-files/agents.conf"
 fi
 
-#start logstash
+#start the kibana and logstash services
 systemctl start logstash
+systemctl start kibana
 
 #create a Windows agent policy
 WINPLC_RESP=$(curl -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "windows-agents-default", "description": "The default policy to for use with Windows Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
@@ -549,7 +543,8 @@ fi
 #Inform the user about the succesful completion of the script
 whiptail --title "INSTALLATION SUCCESFULL" --msgbox "The script has succesfully completed the Elastic SIEM installation process. Check if the software works fine, or use the official documentation to fix any problems." 9 78
 infu "The istallation has succesfully completed!"
-echo "Here you can see the passwords for the system internal passwords. This is the only time they will be shown to you. It is advised to copy them to a secure location, so that you can use them if you need to."
+infu "The application web interface is now available at https://${IPADDR}:${KIBPORT}"
+echo "Here you can see the passwords for the system internal passwords. THIS IS THE ONLY TIME THEY WILL BE SHOWN TO YOU. It is advised to copy them to a secure location, so that you can use them if you need to."
 echo "KIBANA SYSTEM PASSWORD: ${KIBSPASS}"
 echo "LOGSTASH INTERNAL PASSWORD: ${LOGIPASS}"
 exit 0
