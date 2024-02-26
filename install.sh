@@ -440,11 +440,11 @@ systemctl start elasticsearch.service
 ./expect/reset-kibana-system-password "${KIBSPASS}"
 
 #Create a role for the internal Logstash user for Elasticsearch, together with the user itself
-LOGIROLE_RESP=$(curl -X POST "https://127.0.0.1:9200/_security/role/logstash_writer" -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" -H "Content-Type: application/json" -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ], "privileges": ["write","create","create_index","manage","manage_ilm"] } ] }')
+LOGIROLE_RESP=$(curl --silent --output  -X POST "https://127.0.0.1:9200/_security/role/logstash_writer" -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" -H "Content-Type: application/json" -d '{ "cluster": ["manage_index_templates", "monitor", "manage_ilm"], "indices": [ { "names": [ "*" ], "privileges": ["write","create","create_index","manage","manage_ilm"] } ] }')
 
 if [[ "${LOGIROLE_RESP}" == *"true"* ]]; then
     infu "Logstash writer role succesfully created"
-    LOGIUSER_RESP=$(curl -X POST "https://127.0.0.1:9200/_security/user/logstash_internal" -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" -H "Content-Type: application/json" -d "{ \"password\" : \"${LOGIPASS}\", \"roles\" : [ \"logstash_writer\"], \"full_name\" : \"Internal Logstash User\" }")
+    LOGIUSER_RESP=$(curl --silent --output  -X POST "https://127.0.0.1:9200/_security/user/logstash_internal" -u "elastic:${SUPPASS}" --cacert "${DEFDIR}ssl/ca/ca.crt" -H "Content-Type: application/json" -d "{ \"password\" : \"${LOGIPASS}\", \"roles\" : [ \"logstash_writer\"], \"full_name\" : \"Internal Logstash User\" }")
     if [[ "${LOGIROLE_RESP}" == *"true"* ]]; then
         infu "Logstash internal user succesfully created"
     else
