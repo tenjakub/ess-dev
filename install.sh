@@ -507,13 +507,12 @@ while [ "${KIBSTATUS_REPEAT}" -eq "1" ]; do
       sleep 5
     else
       KIBSTATUS_REPEAT=0
+      infu "Kibana API is now available!"
     fi
   else
-    infu "Timeout on Kibana startup has been reached. The agent policies have NOT been added."
+    infu "ERROR: Timeout on Kibana API startup has been reached."
   fi
 done
-
-infu "Kibana API is now available!"
 
 #create a Windows agent policy
 WINPLC_RESP=$(curl --silent --output /dev/null -X POST "https://${IPADDR}:${KIBPORT}/api/fleet/agent_policies?sys_monitoring=true" --cacert "${DEFDIR}ssl/ca/ca.crt" -u "elastic:${SUPPASS}" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d '{ "name": "windows-agents-default", "description": "The default policy to for use with Windows Elastic Agents", "namespace": "default", "monitoring_enabled": ["logs", "metrics"], "inactivity_timeout": 1209600, "is_protected": false}')
